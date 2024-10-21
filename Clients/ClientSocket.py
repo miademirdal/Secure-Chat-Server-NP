@@ -1,4 +1,5 @@
 import socket
+import ssl
 
 class ClientSocket:
     """Client class"""
@@ -10,6 +11,7 @@ class ClientSocket:
     
     def connect_server(self):
         try:
+
             self.client_socket.connect((self.host, self.port))
             print(f"Server connected on {self.host}:{self.port} \n Hello welcome to this chat server!")
 

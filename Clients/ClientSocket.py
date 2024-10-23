@@ -4,16 +4,20 @@ import ssl
 class ClientSocket:
     """Client class"""
     
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, use_tls: bool = False) -> None:
         self.host = host
         self.port = port
+        self.use_tls = use_tls
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
+        if use_tls:
+            self.context = ssl.create_default_context()
     def connect_server(self):
         try:
+            if self.use_tls:
+                self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
 
             self.client_socket.connect((self.host, self.port))
-            print(f"Server connected on {self.host}:{self.port} \n Hello welcome to this chat server!")
+            print(f"Server connected with {'TLS' if self.use_tls else 'no TLS'} on {self.host}:{self.port} \nHello, welcome to this chat server!")
 
             while True:
                 message_to_send = input("Enter message to send (type 'end' to quit): ")

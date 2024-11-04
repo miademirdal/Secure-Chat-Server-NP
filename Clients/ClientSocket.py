@@ -18,6 +18,12 @@ class ClientSocket:
 
             self.client_socket.connect((self.host, self.port))
             print(f"Server connected with {'TLS' if self.use_tls else 'no TLS'} on {self.host}:{self.port} \nHello, welcome to this chat server!")
+            
+            username = input("Enter your username: ")
+            password = input("Enter your password: ")
+
+            client_socket.sendall(username.encode('utf-8'))
+            client_socket.sendall(password.encode('utf-8'))
 
             while True:
                 message_to_send = input("Enter message to send (type 'end' to quit): ")

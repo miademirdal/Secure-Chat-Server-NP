@@ -63,7 +63,7 @@ class ServerSocket:
                 #    client_socket.send(message.encode('utf-8'))
                 
                 except Exception as e:
-                    print(f"An error occured: {e}")
+                    print(f"An error occurred: {e}")
                     break
         else:
             print(f"User {username} could not be authenticated.")

@@ -2,6 +2,9 @@
     "version": "0.2",
     "ignoreWords": [
         "pymongo",
-        "bcrypt"
+        "bcrypt",
+        "hashpw",
+        "gensalt",
+        "checkpw"
     ]
 }

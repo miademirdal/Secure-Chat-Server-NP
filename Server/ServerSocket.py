@@ -1,6 +1,8 @@
 import socket
 import ssl
 import threading
+from pymongo import MongoClient
+import bcrypt
 
 class ServerSocket:
     """server class"""
@@ -16,17 +18,43 @@ class ServerSocket:
         #ssl content
         self.context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         self.context.load_cert_chain(certfile='server.crt', keyfile='server.key')
+        
+        #setup MongoDB
+        self.client_db = MongoClient("mongodb://localhost:27017/")
+        self.db = self.client_db['chat_db']
+        self.user_collection = self.db['users']
+        
+    def user_storage(self, username: str, password: str):
+        #storing the usernames and passwords in MongoDB
+        if not self.user_collection.find_one({"username" : username}):
+            hashed_password =bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            self.user_collection.insert_one({"username" : username, "password" : hashed_password})
+            print(f"Stored user: {username}")
+        else:
+            print(f"Username {username} is already in use.")
+            
+    def user_auth(self, username: str, password: str):
+        user = self.user_collection.find_one({"username" : username})
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
+            return True
+        return False
     
-    def ClientConnect(self, client_socket):
+    def client_connect(self, client_socket):
         print(f"Client Connected")
-        while True:
-            try:
-                data = client_socket.recv(1024)
-                if not data:
-                    break;
-                print(f"Received from client: {data.decode('utf-8')}")
-                responseMessage = "Server: Message received!"
-                client_socket.sendall(responseMessage.encode('utf-8'))
+        
+        username = client_socket.recv(1024).decode('utf-8')
+        password = client_socket.recv(1024).decode('utf-8')
+        
+        if self.user_auth(username, password):
+            print(f"You are logged in! {username}")
+            while True:
+                try:
+                    data = client_socket.recv(1024)
+                    if not data:
+                        break
+                    print(f"Received from client: {data.decode('utf-8')}")
+                    responseMessage = "Server: Message received!"
+                    client_socket.sendall(responseMessage.encode('utf-8'))
                     
                 #client_socket, addr = self.server_socket.accept()
                 
@@ -34,9 +62,12 @@ class ServerSocket:
                 #for message in messages:
                 #    client_socket.send(message.encode('utf-8'))
                 
-            except Exception as e:
-                print(f"An error occured: {e}")
-                break
+                except Exception as e:
+                    print(f"An error occured: {e}")
+                    break
+        else:
+            print(f"User {username} could not be authenticated.")
+            client_socket.close()
     
     def start_server(self):
         print("Starting Server...")

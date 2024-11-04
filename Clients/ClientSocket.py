@@ -1,5 +1,6 @@
 import socket
 import ssl
+import threading
 
 class ClientSocket:
     """Client class"""
@@ -11,6 +12,19 @@ class ClientSocket:
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if use_tls:
             self.context = ssl.create_default_context()
+            
+    def receive_messages(self):
+        while True:
+            try:
+                response = self.client_socket.recv(1024)
+                if not response:
+                    print("Server has closed the connection.")
+                    break
+                print(f"Received from server: {response.decode('utf-8')}")
+            except Exception as e:
+                print(f"An error occurred while receiving a message: {e}")
+                break
+            
     def connect_server(self):
         try:
             if self.use_tls:
@@ -22,8 +36,10 @@ class ClientSocket:
             username = input("Enter your username: ")
             password = input("Enter your password: ")
 
-            client_socket.sendall(username.encode('utf-8'))
-            client_socket.sendall(password.encode('utf-8'))
+            self.client_socket.sendall(username.encode('utf-8'))
+            self.client_socket.sendall(password.encode('utf-8'))
+            
+            threading.Thread(target=self.receive_messages, daemon=True).start()
 
             while True:
                 message_to_send = input("Enter message to send (type 'end' to quit): ")

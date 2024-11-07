@@ -114,11 +114,11 @@ class ClientSocket:
             self.text_area.yview(tk.END)
             self.message_entry.delete(0, tk.END)
         else: 
-            self.text_area.insert(tk.END, "Pleasee ennter a message to send.\n")
+            self.text_area.insert(tk.END, "Please enter a message to send.\n")
             self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
-    host = '127.0.0.1'
+    host = 'localhost'
     port = 1200
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

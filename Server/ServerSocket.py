@@ -81,7 +81,7 @@ class ServerSocket:
             client_thread.start()
             
 if __name__ == "__main__":
-    host = '127.0.0.1'
+    host = 'localhost'
     port = 1200
     server = ServerSocket(host=host, port=port) 
-    server.start_server() #error
+    server.start_server()

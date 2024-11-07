@@ -120,5 +120,5 @@ class ClientSocket:
 if __name__ == "__main__":
     host = '127.0.0.1'
     port = 1200
-    client = ClientSocket(host=host, port=port, use_tsl=True)
+    client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

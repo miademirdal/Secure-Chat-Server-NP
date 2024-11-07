@@ -121,4 +121,4 @@ if __name__ == "__main__":
     host = '127.0.0.1'
     port = 1200
     client = ClientSocket(host=host, port=port, use_tsl=True)
-    client.connect_server()
+    client.create_gui()

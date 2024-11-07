@@ -76,11 +76,11 @@ class ClientSocket:
         self.username_label = tk.Label(self.window, text="Username: ")
         self.username_label.grid(row=1, column=0, padx=10)
         self.username_entry = tk.Entry(self.window, width=30)
-        self.username_entry.grid(row=2, column=1, padx=10)
+        self.username_entry.grid(row=1, column=1, padx=10)
 
         self.password_label = tk.Label(self.window, text="Password: ")
         self.password_label.grid(row=2, column=0, padx=10)
-        self.password_entry = tk.Entry(self.window, width=30)
+        self.password_entry = tk.Entry(self.window, width=30, show="*")
         self.password_entry.grid(row=2, column=1, padx=10)
 
         self.connect_button = tk.Button(self.window, text="Connect", command=self.connect)
@@ -106,7 +106,7 @@ class ClientSocket:
             self.text_area.insert(tk.END, "Please enter both username and password.\n")
             self.text_area.yview(tk.END)
 
-    def send_chat_maessage(self):
+    def send_chat_message(self):
         message = self.message_entry.get()
         if message:
             self.send_message(message)

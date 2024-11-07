@@ -1,6 +1,8 @@
 import socket
 import ssl
 import threading
+import tkinter as tk
+from tkinter import scrolledtext
 
 class ClientSocket:
     """Client class"""
@@ -20,46 +22,103 @@ class ClientSocket:
                 if not response:
                     print("Server has closed the connection.")
                     break
-                print(f"Received from server: {response.decode('utf-8')}")
+                self.text_area.insert(tk.END, f"Server: {response.decode('utf-8')}\n")
+                self.text_area.yview(tk.END)
             except Exception as e:
                 print(f"An error occurred while receiving a message: {e}")
                 break
             
-    def connect_server(self):
+    def connect_server(self, username, password):
+        """Connect to the server and authenticate"""
         try:
             if self.use_tls:
                 self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
 
             self.client_socket.connect((self.host, self.port))
-            print(f"Server connected with {'TLS' if self.use_tls else 'no TLS'} on {self.host}:{self.port} \nHello, welcome to this chat server!")
-            
-            username = input("Enter your username: ")
-            password = input("Enter your password: ")
 
+            # Send username and password to server
             self.client_socket.sendall(username.encode('utf-8'))
             self.client_socket.sendall(password.encode('utf-8'))
-            
-            threading.Thread(target=self.receive_messages, daemon=True).start()
 
-            while True:
-                message_to_send = input("Enter message to send (type 'end' to quit): ")
+            # Receive authentication response from server
+            auth_response = self.client_socket.recv(1024).decode('utf-8')
+            self.text_area.insert(tk.END, f"{auth_response}\n")
+            self.text_area.yview(tk.END)
 
-                if message_to_send.lower() == 'end':
-                    print("Ending connection.")
-                    self.client_socket.sendall(message_to_send.encode('utf-8'))
-                    break
+            if "successful" in auth_response:
+                # Start receiving messages from the server in a separate thread
+                threading.Thread(target=self.receive_messages, daemon=True).start()
+            else:
+                self.client_socket.close()
 
-                self.client_socket.sendall(message_to_send.encode('utf-8'))
-
-                response = self.client_socket.recv(1024)
-                print(f"Received from server: {response.decode('utf-8')}")
         except Exception as e:
-            print(f"An error occurred: {e}")
-        finally:
+            print(f"Error connecting to server: {e}")
+            self.text_area.insert(tk.END, f"Error: {e}\n")
+        
+    def send_message(self, message):
+        if message.lower() == 'end':
+            self.client_socket.sendall(message.encode('utf-8'))
             self.client_socket.close()
+            self.window.quit()
+        else:
+            self.client_socket.sendall(message.encode('utf-8'))
+
+
+    def create_gui(self): 
+        self.window = tk.Tk()
+        self.window.title("Chat Clinet")
+
+        # ScrolledText widget for chat logs
+        self.text_area = scrolledtext.ScrolledText(self.window, width = 50, height = 20, wrap=tk.WORD)
+        self.text_area.grid(row=0, column=0, padx=10, pady=10)
+
+        # Entry for username and password
+        self.username_label = tk.Label(self.window, text="Username: ")
+        self.username_label.grid(row=1, column=0, padx=10)
+        self.username_entry = tk.Entry(self.window, width=30)
+        self.username_entry.grid(row=2, column=1, padx=10)
+
+        self.password_label = tk.Label(self.window, text="Password: ")
+        self.password_label.grid(row=2, column=0, padx=10)
+        self.password_entry = tk.Entry(self.window, width=30)
+        self.password_entry.grid(row=2, column=1, padx=10)
+
+        self.connect_button = tk.Button(self.window, text="Connect", command=self.connect)
+        self.connect_button.grid(row=3, column=1, padx=10, pady=10)
+
+        #Entry for chat messages
+        self.message_label = tk.Label(self.window, text="Enter message:")
+        self.message_label.grid(row=4, column=0, padx=10)
+        self.message_entry = tk.Entry(self.window, width=30)
+        self.message_entry.grid(row=4, column=1, padx=10)
+
+        self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message)
+        self.send_button.grid(row=4, column=2, padx=10)
+
+        self.window.mainloop()
+
+    def connect(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        if username and password:
+            self.connect_server(username, password)
+        else: 
+            self.text_area.insert(tk.END, "Please enter both username and password.\n")
+            self.text_area.yview(tk.END)
+
+    def send_chat_maessage(self):
+        message = self.message_entry.get()
+        if message:
+            self.send_message(message)
+            self.text_area.insert(tk.END, f"You: {message}\n")
+            self.text_area.yview(tk.END)
+            self.message_entry.delete(0, tk.END)
+        else: 
+            self.text_area.insert(tk.END, "Pleasee ennter a message to send.\n")
+            self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
     host = '127.0.0.1'
     port = 1200
-    client = ClientSocket(host=host, port=port)
+    client = ClientSocket(host=host, port=port, use_tsl=True)
     client.connect_server()

@@ -17,7 +17,7 @@ class ServerSocket:
         
         #ssl content
         self.context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key') #error on this line
+        self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
         
         #setup MongoDB
         self.client_db = MongoClient("mongodb://localhost:27017/")
@@ -77,11 +77,11 @@ class ServerSocket:
             
             #Wrap the client socket with TLS
             secure_client_socket = self.context.wrap_socket(client_socket, server_side=True)
-            client_thread = threading.Thread(target=self.handle_client, args=(secure_client_socket,))
+            client_thread = threading.Thread(target=self.client_connect, args=(secure_client_socket,)) #error
             client_thread.start()
             
 if __name__ == "__main__":
     host = '127.0.0.1'
     port = 1200
-    server = ServerSocket(host=host, port=port) #error on this line
-    server.start_server()
+    server = ServerSocket(host=host, port=port) 
+    server.start_server() #error

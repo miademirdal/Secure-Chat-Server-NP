@@ -17,7 +17,7 @@ class ServerSocket:
         
         #ssl content
         self.context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
+        self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/localhost.key')
         
         #setup MongoDB
         self.client_db = MongoClient("mongodb://localhost:27017/")

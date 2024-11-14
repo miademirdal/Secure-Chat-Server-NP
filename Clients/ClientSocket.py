@@ -13,7 +13,8 @@ class ClientSocket:
         self.use_tls = use_tls
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if use_tls:
-            self.context = ssl.create_default_context()
+            self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            self.context.load_verify_locations('Server/server.crt')  # Path to server.crt
             
     def receive_messages(self):
         while True:

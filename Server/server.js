@@ -5,8 +5,8 @@ const app = express();
 
 // Read the SSL certificate and key files
 const options = {
-  key: fs.readFileSync('./localhost.key'),    // Path to your private key
-  cert: fs.readFileSync('./server.crt')   // Path to your certificate
+  key: fs.readFileSync('Server/localhost.key'),    // Path to your private key
+  cert: fs.readFileSync('Server/server.crt')   // Path to your certificate
 };
 
 // Define a simple route

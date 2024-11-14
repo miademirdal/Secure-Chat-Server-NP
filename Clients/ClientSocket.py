@@ -67,32 +67,36 @@ class ClientSocket:
     def create_gui(self): 
         self.window = tk.Tk()
         self.window.title("Chat Clinet")
+        self.window.configure(bg="#003366")
 
         # ScrolledText widget for chat logs
         self.text_area = scrolledtext.ScrolledText(self.window, width = 50, height = 20, wrap=tk.WORD)
         self.text_area.grid(row=0, column=0, padx=10, pady=10)
 
         # Entry for username and password
-        self.username_label = tk.Label(self.window, text="Username: ")
+        self.username_label = tk.Label(self.window, text="Username: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
         self.username_label.grid(row=1, column=0, padx=10)
-        self.username_entry = tk.Entry(self.window, width=30)
+        self.username_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
+        self.username_entry.grid(row=1, column=1, padx=10)
         self.username_entry.grid(row=1, column=1, padx=10)
 
-        self.password_label = tk.Label(self.window, text="Password: ")
+        self.password_label = tk.Label(self.window, text="Password: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
         self.password_label.grid(row=2, column=0, padx=10)
-        self.password_entry = tk.Entry(self.window, width=30, show="*")
+        self.password_entry = tk.Entry(self.window, width=30, show="*", bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
         self.password_entry.grid(row=2, column=1, padx=10)
 
-        self.connect_button = tk.Button(self.window, text="Connect", command=self.connect)
+        self.connect_button = tk.Button(self.window, text="Connect", command=self.connect, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
         self.connect_button.grid(row=3, column=1, padx=10, pady=10)
 
         #Entry for chat messages
-        self.message_label = tk.Label(self.window, text="Enter message:")
+        self.message_label = tk.Label(self.window, text="Enter message:", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
         self.message_label.grid(row=4, column=0, padx=10)
-        self.message_entry = tk.Entry(self.window, width=30)
+        self.message_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
         self.message_entry.grid(row=4, column=1, padx=10)
 
-        self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message)
+        self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
+        self.send_button.grid(row=4, column=2, padx=10)
+
         self.send_button.grid(row=4, column=2, padx=10)
 
         self.window.mainloop()

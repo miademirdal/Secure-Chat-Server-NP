@@ -38,26 +38,29 @@ class ClientSocket:
         self.text_area.yview(tk.END)
 
     def connect_server(self, username, password, action):
-        """Connect to the server and authenticate"""
         try:
             if self.use_tls:
-                self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
+            # Only wrap the socket if it's a valid socket object
+                if not self.client_socket._closed:  # Check if the socket is open (this is just an example check)
+                    self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
+            else:
+                print("Error: Socket is already closed before wrapping with SSL.")
+                return
 
-            self.client_socket.connect((self.host, self.port))
+        # Now proceed to connect the socket
+            self.client_socket.connect((self.host, self.port))  # Only after wrapping or creating the socket
 
-            # Send username and password to server
-            self.client_socket.sendall(action.encode('ut-8'))
+        # Send action, username, and password to the server
+            self.client_socket.sendall(action.encode('utf-8'))
             self.client_socket.sendall(username.encode('utf-8'))
             self.client_socket.sendall(password.encode('utf-8'))
 
-            # Receive authentication response from server
+        # Receive authentication response from server
             auth_response = self.client_socket.recv(1024).decode('utf-8')
             self.text_area.after(0, self.insert_message, f"{auth_response}\n")
 
             if "successful" in auth_response:
-                # Disable the connect button after successful connection
-                self.connect_button.config(state=tk.DISABLED)
-                # Start receiving messages from the server in a separate thread
+                self.connect_button.config(state=tk.DISABLED)  # Disable button on successful connection
                 threading.Thread(target=self.receive_messages, daemon=True).start()
             else:
                 self.client_socket.close()
@@ -127,6 +130,8 @@ class ClientSocket:
         username = self.username_entry.get()
         password = self.password_entry.get()
         action = self.action_var.get()
+        print(f"Action selected: {action}")
+
         if username and password:
             self.connect_server(username, password, action)
         else: 

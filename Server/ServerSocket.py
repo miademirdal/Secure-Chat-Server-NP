@@ -37,8 +37,10 @@ class ServerSocket:
             print(f"Username {username} is already in use.")
             
     def user_auth(self, username: str, password: str):
-        user = self.user_collection.find_one({"username" : username})
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
+        user = self.user_collection.find_one({"username": username})
+        if user:
+            print(f"Stored hash for user {username}: {user['password']}")
+        if bcrypt.checkpw(password.encode('utf-8'), user['password']):
             return True
         return False
     

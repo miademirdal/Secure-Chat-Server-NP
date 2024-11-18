@@ -3,6 +3,7 @@ import ssl
 import threading
 from pymongo import MongoClient
 import bcrypt
+import tkinter as tk
 
 class ServerSocket:
     """server class"""
@@ -41,12 +42,25 @@ class ServerSocket:
     
     def client_connect(self, client_socket):
         print(f"Client Connected")
-        
+    
+        # Receive the username and password
         username = client_socket.recv(1024).decode('utf-8')
         password = client_socket.recv(1024).decode('utf-8')
+    
+        print(f"Received username: {username}")
+        print(f"Received password: {password}")
         
+
+        # Authenticate the user
         if self.user_auth(username, password):
             print(f"You are logged in! {username}")
+            #for debugging hashed usr info (start)
+            user = self.user_collection.find_one({"username": username})
+            if user:
+                print(f"Stored hash for user {username}: {user['password']}")
+            if bcrypt.checkpw(password.encode('utf-8'), user['password']):
+                return True
+            #for debugging hashed usr info (end)
             while True:
                 try:
                     data = client_socket.recv(1024)
@@ -55,29 +69,52 @@ class ServerSocket:
                     print(f"Received from client: {data.decode('utf-8')}")
                     responseMessage = "Server: Message received!"
                     client_socket.sendall(responseMessage.encode('utf-8'))
-                    
-                #client_socket, addr = self.server_socket.accept()
-                
-                #print(f"got connected on {addr}")
-                #for message in messages:
-                #    client_socket.send(message.encode('utf-8'))
-                
                 except Exception as e:
                     print(f"An error occurred: {e}")
                     break
         else:
             print(f"User {username} could not be authenticated.")
+            client_socket.sendall("Authentication failed.".encode('utf-8'))
             client_socket.close()
+            
+    def connect_server(self, username, password):
+        """Connect to the server and authenticate"""
+        try:
+            if self.use_tls:
+                self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
+
+            self.client_socket.connect((self.host, self.port))
+
+            # Send username and password to server
+            print(f"Sending username: {username}, password: {password}")
+            self.client_socket.sendall(username.encode('utf-8'))
+            self.client_socket.sendall(password.encode('utf-8'))
+
+            # Receive authentication response from server
+            auth_response = self.client_socket.recv(1024).decode('utf-8')
+            print(f"Server response: {auth_response}")
+            self.text_area.insert(tk.END, f"{auth_response}\n")
+            self.text_area.yview(tk.END)
+
+            if "successful" in auth_response:
+                # Start receiving messages from the server in a separate thread
+                threading.Thread(target=self.receive_messages, daemon=True).start()
+            else:
+                self.client_socket.close()
+
+        except Exception as e:
+            print(f"Error connecting to server: {e}")
+            self.text_area.insert(tk.END, f"Error: {e}\n")
+
     
     def start_server(self):
-        print("Starting Server...")
         while True:
             client_socket, addr = self.server_socket.accept()
             print(f"Got connected from {addr}")
             
             #Wrap the client socket with TLS
             secure_client_socket = self.context.wrap_socket(client_socket, server_side=True)
-            client_thread = threading.Thread(target=self.client_connect, args=(secure_client_socket,)) #error
+            client_thread = threading.Thread(target=self.client_connect, args=(secure_client_socket,))
             client_thread.start()
             
 if __name__ == "__main__":

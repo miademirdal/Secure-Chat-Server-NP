@@ -24,6 +24,8 @@ class ServerSocket:
         self.client_db = MongoClient("mongodb://localhost:27017/")
         self.db = self.client_db['chat_db']
         self.user_collection = self.db['users']
+
+        self.active_users = [] # List of active users
         
     def user_storage(self, username: str, password: str):
         #storing the usernames and passwords in MongoDB
@@ -39,6 +41,13 @@ class ServerSocket:
         if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
             return True
         return False
+    
+    def update_activity_log(self):
+        print("\n--- Current Active Users ---")
+        for username in self.connected_clients:
+            print(f"User: {username}")
+        print("---------------------------\n")
+    
     
     def client_connect(self, client_socket):
         print(f"Client Connected")

@@ -3,6 +3,7 @@ import ssl
 import threading
 from pymongo import MongoClient
 import bcrypt
+import tkinter as tk
 
 class ServerSocket:
     """server class"""
@@ -105,7 +106,7 @@ class ServerSocket:
             
             #Wrap the client socket with TLS
             secure_client_socket = self.context.wrap_socket(client_socket, server_side=True)
-            client_thread = threading.Thread(target=self.client_connect, args=(secure_client_socket,)) #error
+            client_thread = threading.Thread(target=self.client_connect, args=(secure_client_socket,))
             client_thread.start()
             
 if __name__ == "__main__":

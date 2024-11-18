@@ -54,7 +54,6 @@ class ServerSocket:
             print(f"User: {username}")
         print("---------------------------\n")
     
-    
     def client_connect(self, client_socket):
         print(f"Client Connected")
     
@@ -77,36 +76,29 @@ class ServerSocket:
             return
 
         elif action == "login":
-            # Login process
+        # Login process
             username = client_socket.recv(1024).decode('utf-8')
             password = client_socket.recv(1024).decode('utf-8')
-        
-            print(f"Received login request for username: {username}")
-        
-        # Authenticate the user
-            if self.user_auth(username, password):
-                client_socket.sendall("Login successful.".encode('utf-8'))
-                self.active_users.append(username)
-                print(f"User {username} authenticated successfully.")
+
+        if self.user_auth(username, password):
+            client_socket.sendall("Login successful.".encode('utf-8'))
+            self.active_users.append(username)
+            print(f"User {username} authenticated successfully.")
             
             # Chat functionality
             while True:
                 try:
                     data = client_socket.recv(1024)
                     if not data:
-                        break
+                        break  # If no data is received, break the loop
                     print(f"Received from client: {data.decode('utf-8')}")
                     responseMessage = "Server: Message received!"
                     client_socket.sendall(responseMessage.encode('utf-8'))
                 except Exception as e:
                     print(f"An error occurred: {e}")
                     break
-                else:
-                    client_socket.sendall("Login failed.".encode('utf-8'))
-                    client_socket.close()
-            
         else:
-            client_socket.sendall("Invalid action.".encode('utf-8'))
+            client_socket.sendall("Login failed.".encode('utf-8'))
             client_socket.close()
 
     def connect_server(self, username, password):

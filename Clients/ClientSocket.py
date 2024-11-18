@@ -130,7 +130,6 @@ class ClientSocket:
         username = self.username_entry.get()
         password = self.password_entry.get()
         action = self.action_var.get()
-        print(f"Action selected: {action}")
 
         if username and password:
             self.connect_server(username, password, action)
@@ -140,14 +139,15 @@ class ClientSocket:
 
     def send_chat_message(self):
         message = self.message_entry.get()
-        if message:
-            self.send_message(message)
+        if message.lower() == 'end':
+            self.client_socket.sendall(message.encode('utf-8'))
+            self.client_socket.close()  # Properly close connection when ending chat
+            self.window.quit()  # Close the client window
+        else:
+            self.client_socket.sendall(message.encode('utf-8'))
             self.text_area.insert(tk.END, f"You: {message}\n")
             self.text_area.yview(tk.END)
             self.message_entry.delete(0, tk.END)
-        else: 
-            self.text_area.insert(tk.END, "Please enter a message to send.\n")
-            self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
     host = 'localhost'

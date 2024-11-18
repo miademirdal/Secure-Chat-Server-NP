@@ -49,10 +49,18 @@ class ServerSocket:
     
         print(f"Received username: {username}")
         print(f"Received password: {password}")
+        
 
         # Authenticate the user
         if self.user_auth(username, password):
             print(f"You are logged in! {username}")
+            #for debugging hashed usr info (start)
+            user = self.user_collection.find_one({"username": username})
+            if user:
+                print(f"Stored hash for user {username}: {user['password']}")
+            if bcrypt.checkpw(password.encode('utf-8'), user['password']):
+                return True
+            #for debugging hashed usr info (end)
             while True:
                 try:
                     data = client_socket.recv(1024)

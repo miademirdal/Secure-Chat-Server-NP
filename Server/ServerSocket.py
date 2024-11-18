@@ -28,9 +28,9 @@ class ServerSocket:
         self.active_users = [] # List of active users
         
     def user_storage(self, username: str, password: str):
-        #storing the usernames and passwords in MongoDB
+    # Store the username and password in MongoDB
         if not self.user_collection.find_one({"username" : username}):
-            hashed_password =bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             self.user_collection.insert_one({"username" : username, "password" : hashed_password})
             print(f"Stored user: {username}")
         else:
@@ -38,11 +38,15 @@ class ServerSocket:
             
     def user_auth(self, username: str, password: str):
         user = self.user_collection.find_one({"username": username})
-        if user:
-            print(f"Stored hash for user {username}: {user['password']}")
+        if user is None:
+            print(f"User {username} not found.")
+            return False  # Early return if the user is not found
+    # Check if the password matches the stored hash
         if bcrypt.checkpw(password.encode('utf-8'), user['password']):
             return True
-        return False
+        else:
+            print(f"Incorrect password for user {username}.")
+            return False
     
     def update_activity_log(self):
         print("\n--- Current Active Users ---")
@@ -54,24 +58,38 @@ class ServerSocket:
     def client_connect(self, client_socket):
         print(f"Client Connected")
     
-        # Receive the username and password
-        username = client_socket.recv(1024).decode('utf-8')
-        password = client_socket.recv(1024).decode('utf-8')
-    
-        print(f"Received username: {username}")
-        print(f"Received password: {password}")
-        
+    # Receive action: register or login
+        action = client_socket.recv(1024).decode('utf-8')
 
+        if action == "register":
+        # Registration process
+            username = client_socket.recv(1024).decode('utf-8')
+            password = client_socket.recv(1024).decode('utf-8')
+        
+            print(f"Received registration request for username: {username}")
+        
+        # Register the user
+            if self.user_storage(username, password):
+                client_socket.sendall("Registration successful.".encode('utf-8'))
+            else:
+                client_socket.sendall("Username already in use.".encode('utf-8'))
+                client_socket.close()
+            return
+
+        elif action == "login":
+            # Login process
+            username = client_socket.recv(1024).decode('utf-8')
+            password = client_socket.recv(1024).decode('utf-8')
+        
+            print(f"Received login request for username: {username}")
+        
         # Authenticate the user
-        if self.user_auth(username, password):
-            print(f"You are logged in! {username}")
-            #for debugging hashed usr info (start)
-            user = self.user_collection.find_one({"username": username})
-            if user:
-                print(f"Stored hash for user {username}: {user['password']}")
-            if bcrypt.checkpw(password.encode('utf-8'), user['password']):
-                return True
-            #for debugging hashed usr info (end)
+            if self.user_auth(username, password):
+                client_socket.sendall("Login successful.".encode('utf-8'))
+                self.active_users.append(username)
+                print(f"User {username} authenticated successfully.")
+            
+            # Chat functionality
             while True:
                 try:
                     data = client_socket.recv(1024)
@@ -83,11 +101,14 @@ class ServerSocket:
                 except Exception as e:
                     print(f"An error occurred: {e}")
                     break
-        else:
-            print(f"User {username} could not be authenticated.")
-            client_socket.sendall("Authentication failed.".encode('utf-8'))
-            client_socket.close()
+            else:
+                client_socket.sendall("Login failed.".encode('utf-8'))
+                client_socket.close()
             
+        else:
+            client_socket.sendall("Invalid action.".encode('utf-8'))
+            client_socket.close()
+   
     def connect_server(self, username, password):
         """Connect to the server and authenticate"""
         try:

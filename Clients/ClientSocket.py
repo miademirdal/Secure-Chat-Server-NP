@@ -37,7 +37,7 @@ class ClientSocket:
         self.text_area.insert(tk.END, message)
         self.text_area.yview(tk.END)
 
-    def connect_server(self, username, password):
+    def connect_server(self, username, password, action):
         """Connect to the server and authenticate"""
         try:
             if self.use_tls:
@@ -46,6 +46,7 @@ class ClientSocket:
             self.client_socket.connect((self.host, self.port))
 
             # Send username and password to server
+            self.client_socket.sendall(action.encode('ut-8'))
             self.client_socket.sendall(username.encode('utf-8'))
             self.client_socket.sendall(password.encode('utf-8'))
 
@@ -78,6 +79,7 @@ class ClientSocket:
         self.window = tk.Tk()
         self.window.title("Chat Client")
         self.window.configure(bg="#003366")
+        self.action_var = tk.StringVar(value="login")
 
         # ScrolledText widget for chat logs
         self.text_area = scrolledtext.ScrolledText(self.window, width=50, height=20, wrap=tk.WORD)
@@ -101,25 +103,32 @@ class ClientSocket:
         self.password_entry = tk.Entry(self.window, width=30, show="*", bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
         self.password_entry.grid(row=3, column=1, padx=10)
 
+        self.action_var = tk.StringVar(value="login")  # Default action is login
+        self.login_rb = tk.Radiobutton(self.window, text="Login", variable=self.action_var, value="login", bg="#003366", fg="white")
+        self.login_rb.grid(row=4, column=0, padx=10)
+        self.register_rb = tk.Radiobutton(self.window, text="Register", variable=self.action_var, value="register", bg="#003366", fg="white")
+        self.register_rb.grid(row=5, column=0, padx=10)
+
         self.connect_button = tk.Button(self.window, text="Connect", command=self.connect, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
-        self.connect_button.grid(row=4, column=1, padx=10, pady=10)
+        self.connect_button.grid(row=6, column=1, padx=10, pady=10)
 
         # Entry for chat messages
         self.message_label = tk.Label(self.window, text="Enter message:", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
-        self.message_label.grid(row=5, column=0, padx=10)
+        self.message_label.grid(row=7, column=0, padx=10)
         self.message_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
-        self.message_entry.grid(row=5, column=1, padx=10)
+        self.message_entry.grid(row=7, column=1, padx=10)
 
         self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
-        self.send_button.grid(row=5, column=2, padx=10)
+        self.send_button.grid(row=7, column=2, padx=10)
 
         self.window.mainloop()
 
     def connect(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
+        action = self.action_var.get()
         if username and password:
-            self.connect_server(username, password)
+            self.connect_server(username, password, action)
         else: 
             self.text_area.insert(tk.END, "Please enter both username and password.\n")
             self.text_area.yview(tk.END)

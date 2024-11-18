@@ -101,14 +101,14 @@ class ServerSocket:
                 except Exception as e:
                     print(f"An error occurred: {e}")
                     break
-            else:
-                client_socket.sendall("Login failed.".encode('utf-8'))
-                client_socket.close()
+                else:
+                    client_socket.sendall("Login failed.".encode('utf-8'))
+                    client_socket.close()
             
         else:
             client_socket.sendall("Invalid action.".encode('utf-8'))
             client_socket.close()
-   
+
     def connect_server(self, username, password):
         """Connect to the server and authenticate"""
         try:

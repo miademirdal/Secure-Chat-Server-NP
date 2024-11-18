@@ -23,7 +23,11 @@ class ClientSocket:
                 if not response:
                     print("Server has closed the connection.")
                     break
-                self.text_area.after(0, self.insert_message, f"Server: {response.decode('utf-8')}\n")
+                message = response.decode('utf-8')
+
+                if message.startswith("Active Users"):
+                    self.text_area.after(0,self.update_active_users, message)
+                else:self.text_area.after(0, self.insert_message, f"Server: {message}\n")
             except Exception as e:
                 print(f"An error occurred while receiving a message: {e}")
                 break
@@ -79,28 +83,35 @@ class ClientSocket:
         self.text_area = scrolledtext.ScrolledText(self.window, width=50, height=20, wrap=tk.WORD)
         self.text_area.grid(row=0, column=0, padx=10, pady=10)
 
+        # Active user display
+        self.active_users_label = tk.Label(self.window, text="Active Users", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
+        self.active_users_label.grid(row=1, column=2, padx=5, pady=5, sticky="n")  # Align to the top
+
+        self.active_users_text = scrolledtext.ScrolledText(self.window, width=30, height=20, wrap=tk.WORD, state=tk.DISABLED)
+        self.active_users_text.grid(row=0, column=2, padx=5, pady=5)
+
         # Entry for username and password
         self.username_label = tk.Label(self.window, text="Username: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
-        self.username_label.grid(row=1, column=0, padx=10)
+        self.username_label.grid(row=2, column=0, padx=10)
         self.username_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
-        self.username_entry.grid(row=1, column=1, padx=10)
+        self.username_entry.grid(row=2, column=1, padx=10)
 
         self.password_label = tk.Label(self.window, text="Password: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
-        self.password_label.grid(row=2, column=0, padx=10)
+        self.password_label.grid(row=3, column=0, padx=10)
         self.password_entry = tk.Entry(self.window, width=30, show="*", bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
-        self.password_entry.grid(row=2, column=1, padx=10)
+        self.password_entry.grid(row=3, column=1, padx=10)
 
         self.connect_button = tk.Button(self.window, text="Connect", command=self.connect, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
-        self.connect_button.grid(row=3, column=1, padx=10, pady=10)
+        self.connect_button.grid(row=4, column=1, padx=10, pady=10)
 
         # Entry for chat messages
         self.message_label = tk.Label(self.window, text="Enter message:", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
-        self.message_label.grid(row=4, column=0, padx=10)
+        self.message_label.grid(row=5, column=0, padx=10)
         self.message_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
-        self.message_entry.grid(row=4, column=1, padx=10)
+        self.message_entry.grid(row=5, column=1, padx=10)
 
         self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
-        self.send_button.grid(row=4, column=2, padx=10)
+        self.send_button.grid(row=5, column=2, padx=10)
 
         self.window.mainloop()
 

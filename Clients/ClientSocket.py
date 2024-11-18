@@ -2,7 +2,7 @@ import socket
 import ssl
 import threading
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, messagebox
 
 class ClientSocket:
     """Client class"""
@@ -23,12 +23,16 @@ class ClientSocket:
                 if not response:
                     print("Server has closed the connection.")
                     break
-                self.text_area.insert(tk.END, f"Server: {response.decode('utf-8')}\n")
-                self.text_area.yview(tk.END)
+                self.text_area.after(0, self.insert_message, f"Server: {response.decode('utf-8')}\n")
             except Exception as e:
                 print(f"An error occurred while receiving a message: {e}")
                 break
-            
+
+    def insert_message(self, message):
+        """Insert message into the text area safely from another thread."""
+        self.text_area.insert(tk.END, message)
+        self.text_area.yview(tk.END)
+
     def connect_server(self, username, password):
         """Connect to the server and authenticate"""
         try:
@@ -43,18 +47,20 @@ class ClientSocket:
 
             # Receive authentication response from server
             auth_response = self.client_socket.recv(1024).decode('utf-8')
-            self.text_area.insert(tk.END, f"{auth_response}\n")
-            self.text_area.yview(tk.END)
+            self.text_area.after(0, self.insert_message, f"{auth_response}\n")
 
             if "successful" in auth_response:
+                # Disable the connect button after successful connection
+                self.connect_button.config(state=tk.DISABLED)
                 # Start receiving messages from the server in a separate thread
                 threading.Thread(target=self.receive_messages, daemon=True).start()
             else:
                 self.client_socket.close()
+                self.text_area.after(0, self.insert_message, "Authentication failed. Connection closed.\n")
 
         except Exception as e:
             print(f"Error connecting to server: {e}")
-            self.text_area.insert(tk.END, f"Error: {e}\n")
+            self.text_area.after(0, self.insert_message, f"Error: {e}\n")
         
     def send_message(self, message):
         if message.lower() == 'end':
@@ -64,21 +70,19 @@ class ClientSocket:
         else:
             self.client_socket.sendall(message.encode('utf-8'))
 
-
     def create_gui(self): 
         self.window = tk.Tk()
-        self.window.title("Chat Clinet")
+        self.window.title("Chat Client")
         self.window.configure(bg="#003366")
 
         # ScrolledText widget for chat logs
-        self.text_area = scrolledtext.ScrolledText(self.window, width = 50, height = 20, wrap=tk.WORD)
+        self.text_area = scrolledtext.ScrolledText(self.window, width=50, height=20, wrap=tk.WORD)
         self.text_area.grid(row=0, column=0, padx=10, pady=10)
 
         # Entry for username and password
         self.username_label = tk.Label(self.window, text="Username: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
         self.username_label.grid(row=1, column=0, padx=10)
         self.username_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
-        self.username_entry.grid(row=1, column=1, padx=10)
         self.username_entry.grid(row=1, column=1, padx=10)
 
         self.password_label = tk.Label(self.window, text="Password: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
@@ -89,15 +93,13 @@ class ClientSocket:
         self.connect_button = tk.Button(self.window, text="Connect", command=self.connect, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
         self.connect_button.grid(row=3, column=1, padx=10, pady=10)
 
-        #Entry for chat messages
+        # Entry for chat messages
         self.message_label = tk.Label(self.window, text="Enter message:", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
         self.message_label.grid(row=4, column=0, padx=10)
         self.message_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
         self.message_entry.grid(row=4, column=1, padx=10)
 
         self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
-        self.send_button.grid(row=4, column=2, padx=10)
-
         self.send_button.grid(row=4, column=2, padx=10)
 
         self.window.mainloop()

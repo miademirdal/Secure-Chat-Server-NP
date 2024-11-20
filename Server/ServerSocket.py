@@ -37,28 +37,16 @@ class ServerSocket:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             self.user_collection.insert_one({"username" : username, "password" : hashed_password})
             print(f"Stored user: {username}")
-            client_socket.sendall(f"Registration successful. You can now log in.".encode('utf-8'))
-            client_socket.close()
         else:
             print(f"Username {username} is already in use.")
-            client_socket.sendall(f"Login failed, User not found.".encode('utf-8'))
-            client_socket.close()
             return True
-        else:
-            print(f"Username {username} is already in use.")
-            return False
-            
-    def user_auth(self, username: str, password: str, client_socket):
+    def user_auth(self, username: str, password: str):
         user = self.user_collection.find_one({"username": username})
         if user is None:
             print(f"User {username} not found.")
-            client_socket.sendall(f"Login failed. User not found.".encode('utf-8'))
-            client_socket.close()
             return False  # Early return if the user is not found
     # Check if the password matches the stored hash
         if bcrypt.checkpw(password.encode('utf-8'), user['password']):
-            client_socket.sendall(f"Login successful. Welcome, {username}!".encode('utf-8'))
-            self.active_users.append(username)
             return True
         else:
             print(f"Incorrect password for user {username}.")

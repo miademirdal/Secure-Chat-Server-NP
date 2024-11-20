@@ -1,9 +1,10 @@
 import socket
 import ssl
-import threading
+from threading import Lock
 from pymongo import MongoClient
 import bcrypt
 import tkinter as tk
+
 
 class ServerSocket:
     """server class"""
@@ -26,19 +27,31 @@ class ServerSocket:
         self.user_collection = self.db['users']
 
         self.active_users = [] # List of active users
+<<<<<<< Updated upstream
         
     def user_storage(self, username: str, password: str, client_socket):
+=======
+        self.lock = Lock()
+
+    def user_storage(self, username: str, password: str)-> bool:
+>>>>>>> Stashed changes
     # Store the username and password in MongoDB
         if not self.user_collection.find_one({"username" : username}):
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             self.user_collection.insert_one({"username" : username, "password" : hashed_password})
             print(f"Stored user: {username}")
+<<<<<<< Updated upstream
             client_socket.sendall(f"Registration successful. You can now log in.".encode('utf-8'))
             client_socket.close()
         else:
             print(f"Username {username} is already in use.")
             client_socket.sendall(f"Login failed, User not found.".encode('utf-8'))
             client_socket.close()
+=======
+            return True
+        else:
+            print(f"Username {username} is already in use.")
+>>>>>>> Stashed changes
             return False
             
     def user_auth(self, username: str, password: str, client_socket):
@@ -101,16 +114,23 @@ class ServerSocket:
                 try:
                     data = client_socket.recv(1024)
                     if not data:
+                        print(f"User {username} disconnected.")
+                        self.active_users.remove(username)
                         break  # If no data is received, break the loop
                     print(f"Received from client: {data.decode('utf-8')}")
-                    responseMessage = "Server: Message received!"
-                    client_socket.sendall(responseMessage.encode('utf-8'))
+                    client_socket.sendall("Server: Message Recieved!".encode('utf-8'))
                 except Exception as e:
                     print(f"An error occurred: {e}")
+                    self.active_users.remove(username)
                     break
         else:
             client_socket.sendall("Login failed.".encode('utf-8'))
             client_socket.close()
+
+        with self.lock:
+            self.active_users.append(username)
+        with self.lock:
+            self.active_users.remove(username)
 
     def connect_server(self, username, password):
         """Connect to the server and authenticate"""

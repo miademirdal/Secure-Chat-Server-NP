@@ -50,8 +50,6 @@ class ServerSocket:
             return True
         else:
             print(f"Incorrect password for user {username}.")
-            client_socket.sendall(f"Login failed. Incorrect password.".encode('utf-8'))
-            client_socket.close()
             return False
     
     def update_activity_log(self):

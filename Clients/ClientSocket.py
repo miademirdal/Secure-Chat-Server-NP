@@ -57,8 +57,7 @@ class ClientSocket:
 
         # Receive authentication response from server
             auth_response = self.client_socket.recv(1024).decode('utf-8')
-            self.text_area.after(0, self.insert_message, f"{auth_response}\n")
-
+           
             if "successful" in auth_response:
                 self.connect_button.config(state=tk.DISABLED)  # Disable button on successful connection
                 threading.Thread(target=self.receive_messages, daemon=True).start()

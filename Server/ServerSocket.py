@@ -35,11 +35,11 @@ class ServerSocket:
     def user_storage(self, username: str, password: str)-> bool:
     # Store the username and password in MongoDB
         if not self.user_collection.find_one({"username" : username}):
+            return False
+        else:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             self.user_collection.insert_one({"username" : username, "password" : hashed_password})
             print(f"Stored user: {username}")
-        else:
-            print(f"Username {username} is already in use.")
             return True
     def user_auth(self, username: str, password: str):
         user = self.user_collection.find_one({"username": username})

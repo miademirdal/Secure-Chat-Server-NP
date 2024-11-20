@@ -27,31 +27,25 @@ class ServerSocket:
         self.user_collection = self.db['users']
 
         self.active_users = [] # List of active users
-<<<<<<< Updated upstream
         
     def user_storage(self, username: str, password: str, client_socket):
-=======
         self.lock = Lock()
 
     def user_storage(self, username: str, password: str)-> bool:
->>>>>>> Stashed changes
     # Store the username and password in MongoDB
         if not self.user_collection.find_one({"username" : username}):
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             self.user_collection.insert_one({"username" : username, "password" : hashed_password})
             print(f"Stored user: {username}")
-<<<<<<< Updated upstream
             client_socket.sendall(f"Registration successful. You can now log in.".encode('utf-8'))
             client_socket.close()
         else:
             print(f"Username {username} is already in use.")
             client_socket.sendall(f"Login failed, User not found.".encode('utf-8'))
             client_socket.close()
-=======
             return True
         else:
             print(f"Username {username} is already in use.")
->>>>>>> Stashed changes
             return False
             
     def user_auth(self, username: str, password: str, client_socket):

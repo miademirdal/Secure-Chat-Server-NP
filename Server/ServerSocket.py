@@ -31,15 +31,13 @@ class ServerSocket:
         self.connected_clients = [] # List of connected clients
     
     def update_active_users(self):
-        active_users = ', '.join(self.active_users)
-        for client in self.connected_clients:
-            try:
-                client.sendall(f"Active Users: {active_users}".encode('utf-8'))
-            except Exception as e:
-                print(f"Error sending active users list: {e}")
-        
-    def user_storage(self, username: str, password: str, client_socket):
-        self.lock = Lock()
+        with self.lock:
+            active_users = ', '.join(self.active_users)
+            for client in self.connected_clients:
+                try:
+                    client.sendall(f"Active Users: {active_users}".encode('utf-8'))
+                except Exception as e:
+                    print(f"Error sending active users list: {e}")
 
     def user_storage(self, username: str, password: str)-> bool:
     # Store the username and password in MongoDB

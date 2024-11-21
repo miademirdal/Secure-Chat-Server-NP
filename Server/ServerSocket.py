@@ -28,6 +28,15 @@ class ServerSocket:
         self.user_collection = self.db['users']
 
         self.active_users = [] # List of active users
+        self.connected_clients = [] # List of connected clients
+    
+    def update_active_users(self):
+        active_users = ', '.join(self.active_users)
+        for client in self.connected_clients:
+            try:
+                client.sendall(f"Active Users: {active_users}".encode('utf-8'))
+            except Exception as e:
+                print(f"Error sending active users list: {e}")
         
     def user_storage(self, username: str, password: str, client_socket):
         self.lock = Lock()
@@ -154,7 +163,7 @@ class ServerSocket:
             client_thread.start()
             
 if __name__ == "__main__":
-    host = 'localhost'
+    host = '10.220.52.65'
     port = 1200
     server = ServerSocket(host=host, port=port) 
     server.start_server()

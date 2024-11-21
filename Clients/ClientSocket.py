@@ -149,7 +149,7 @@ class ClientSocket:
             self.message_entry.delete(0, tk.END)
         
 if __name__ == "__main__":
-    host = 'localhost'
+    host = '10.220.52.65'
     port = 1200
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

@@ -23,7 +23,7 @@ class ServerSocket:
         self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
         
         #setup MongoDB
-        self.client_db = MongoClient("mongodb://10.220.52.65/")
+        self.client_db = MongoClient("mongodb://192.168.56.1/")
         self.db = self.client_db['chat_db']
         self.user_collection = self.db['users']
 
@@ -106,7 +106,7 @@ class ServerSocket:
                         self.active_users.remove(username)
                         break  # If no data is received, break the loop
                     print(f"Received from client: {data.decode('utf-8')}")
-                    client_socket.sendall("Server: Message Recieved!".encode('utf-8'))
+                    client_socket.sendall("Server: Message Received!".encode('utf-8'))
                 except Exception as e:
                     print(f"An error occurred: {e}")
                     self.active_users.remove(username)
@@ -161,7 +161,7 @@ class ServerSocket:
             client_thread.start()
             
 if __name__ == "__main__":
-    host = '10.220.52.65'
-    port = 1200
+    host = '192.168.56.1'
+    port = 27017
     server = ServerSocket(host=host, port=port) 
     server.start_server()

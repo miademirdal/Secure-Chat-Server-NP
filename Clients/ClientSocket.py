@@ -3,6 +3,7 @@ import ssl
 import threading
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
+from PIL import Image, ImageTk
 
 class ClientSocket:
     """Client class"""
@@ -15,7 +16,14 @@ class ClientSocket:
         if use_tls:
             self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
             self.context.load_verify_locations('Server/server.crt')  # Path to server.crt
-            
+    
+    def update_active_users(self, message):
+        """Update the active users list in the GUI."""
+        self.active_users_text.config(state=tk.NORMAL)
+        self.active_users_text.delete(1.0, tk.END)  # Clear existing content
+        self.active_users_text.insert(tk.END, message)
+        self.active_users_text.config(state=tk.DISABLED)
+
     def receive_messages(self):
         while True:
             try:
@@ -73,50 +81,77 @@ class ClientSocket:
         else:
             self.client_socket.sendall(message.encode('utf-8'))
 
-    def create_gui(self): 
+    def create_gui(self):
         self.window = tk.Tk()
         self.window.title("CLINET")
-        self.window.configure(bg="#0037ff")
+        self.window.configure(bg="#0028b9")
         self.action_var = tk.StringVar(value="login")
-
+        
+        #background image
+        self.background_image = Image.open('Clients/balcony-8865325_1280.jpg')
+        self.background_photo = ImageTk.PhotoImage(self.background_image)
+        self.background_label = tk.Label(self.window, image=self.background_photo)
+        self.background_label.place(relwidth=1, relheight=1)  # Cover the entire window
+        
         # ScrolledText widget for chat logs
-        self.text_area = scrolledtext.ScrolledText(self.window, width=50, height=20, wrap=tk.WORD)
+        self.text_area = scrolledtext.ScrolledText(self.window, width=50, height=20, wrap=tk.WORD, bg="black", fg="white", font=("Helvetica", 12))
         self.text_area.grid(row=0, column=0, padx=10, pady=10)
+        
+        # Configure the grid
+        self.window.grid_rowconfigure(0, weight=1)  # For ScrolledText
+        self.window.grid_rowconfigure(1, weight=1)  # For Label
+        self.window.grid_columnconfigure(2, weight=1)  # For the entire Active Users column
 
-        # Active user display
-        self.active_users_label = tk.Label(self.window, text="Active Users", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
-        self.active_users_label.grid(row=1, column=2, padx=5, pady=5, sticky="n")  # Align to the top
+        # Active Users Label
+        self.active_users_label = tk.Label(
+        self.window, 
+        text="Active Users", 
+        bg="#0028b9", 
+        fg="white", 
+        font=("Caslon Antique", 12, "bold")
+        )
+        self.active_users_label.grid(row=1, column=2, padx=5, pady=5, sticky="nsew")
 
-        self.active_users_text = scrolledtext.ScrolledText(self.window, width=30, height=20, wrap=tk.WORD, state=tk.DISABLED)
-        self.active_users_text.grid(row=0, column=2, padx=5, pady=5)
-
+        # Active Users ScrolledText
+        self.active_users_text = scrolledtext.ScrolledText(
+        self.window, 
+        width=30, 
+        height=20, 
+        wrap=tk.WORD, 
+        bg="black", 
+        fg="white", 
+        font=("Helvetica", 12), 
+        state=tk.NORMAL  # Enable for debugging
+        )
+        self.active_users_text.grid(row=0, column=2, padx=5, pady=5, sticky="nsew")
+        
         # Entry for username and password
-        self.username_label = tk.Label(self.window, text="Username: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
-        self.username_label.grid(row=2, column=0, padx=10)
-        self.username_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
-        self.username_entry.grid(row=2, column=1, padx=10)
+        self.username_label = tk.Label(self.window, text="Username: ", bg="#0028b9", fg="white", font=("Caslon Antique", 12, "bold"))
+        self.username_label.grid(row=2, column=0, padx=5)
+        self.username_entry = tk.Entry(self.window, width=30, bg="#0028b9", fg="white", insertbackground="black", font=("Caslon Antique", 12))
+        self.username_entry.grid(row=2, column=1, padx=5)
 
-        self.password_label = tk.Label(self.window, text="Password: ", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
+        self.password_label = tk.Label(self.window, text="Password: ", bg="#0028b9", fg="white", font=("Caslon Antique", 12, "bold"))
         self.password_label.grid(row=3, column=0, padx=10)
-        self.password_entry = tk.Entry(self.window, width=30, show="*", bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
+        self.password_entry = tk.Entry(self.window, width=30, show="*", bg="#0028b9", fg="white", insertbackground="black", font=("Caslon Antique", 12))
         self.password_entry.grid(row=3, column=1, padx=10)
 
         self.action_var = tk.StringVar(value="login")  # Default action is login
-        self.login_rb = tk.Radiobutton(self.window, text="Login", variable=self.action_var, value="login", bg="#003366", fg="white")
+        self.login_rb = tk.Radiobutton(self.window, text="Login", variable=self.action_var, value="Login", bg="#0028b9", fg="white")
         self.login_rb.grid(row=4, column=0, padx=10)
-        self.register_rb = tk.Radiobutton(self.window, text="Register", variable=self.action_var, value="register", bg="#003366", fg="white")
+        self.register_rb = tk.Radiobutton(self.window, text="Register", variable=self.action_var, value="Register", bg="#0028b9", fg="white")
         self.register_rb.grid(row=5, column=0, padx=10)
 
-        self.connect_button = tk.Button(self.window, text="Connect", command=self.connect, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
+        self.connect_button = tk.Button(self.window, text="Connect", command=self.connect, bg="#0028b9", fg="white", font=("Caslon Antique", 12, "bold"))
         self.connect_button.grid(row=6, column=1, padx=10, pady=10)
 
         # Entry for chat messages
-        self.message_label = tk.Label(self.window, text="Enter message:", bg="#003366", fg="white", font=("Helvetica", 12, "bold"))
+        self.message_label = tk.Label(self.window, text="Enter message:", bg="#0028b9", fg="white", font=("Caslon Antique", 12, "bold"))
         self.message_label.grid(row=7, column=0, padx=10)
-        self.message_entry = tk.Entry(self.window, width=30, bg="#1a2936", fg="white", insertbackground="white", font=("Helvetica", 12))
+        self.message_entry = tk.Entry(self.window, width=30, bg="#0028b9", fg="white", insertbackground="black", font=("Caslon Antique", 12))
         self.message_entry.grid(row=7, column=1, padx=10)
 
-        self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message, bg="#005288", fg="white", font=("Helvetica", 12, "bold"))
+        self.send_button = tk.Button(self.window, text="Send", command=self.send_chat_message, bg="#0028b9", fg="white", font=("Caslon Antique", 12, "bold"))
         self.send_button.grid(row=7, column=2, padx=10)
 
         self.window.mainloop()

@@ -12,6 +12,8 @@
         "dnspython",
         "insertbackground",
         "padx",
-        "pady"
+        "pady",
+        "relheight",
+        "relwidth"
     ]
 }

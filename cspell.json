@@ -6,5 +6,12 @@
         "hashpw",
         "gensalt",
         "checkpw"
+    ],
+    "words": [
+        "CLINET",
+        "dnspython",
+        "insertbackground",
+        "padx",
+        "pady"
     ]
 }

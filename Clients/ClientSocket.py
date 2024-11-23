@@ -21,10 +21,10 @@ class ClientSocket:
             try:
                 response = self.client_socket.recv(1024)
                 if not response:
-                    print("Server has closed the connection.")
+                    print(f"Server has closed the connection.")
                     break
                 message = response.decode('utf-8')
-
+                
                 if message.startswith("Active Users"):
                     self.text_area.after(0,self.update_active_users, message)
                 else:self.text_area.after(0, self.insert_message, f"Server: {message}\n")
@@ -44,20 +44,16 @@ class ClientSocket:
                 if not self.client_socket._closed:  # Check if the socket is open (this is just an example check)
                     self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
             else:
-                print("Error: Socket is already closed before wrapping with SSL.")
+                print(f"Error: Socket is already closed before wrapping with SSL.")
                 return
-
-        # Now proceed to connect the socket
+            
             self.client_socket.connect((self.host, self.port))  # Only after wrapping or creating the socket
-
-        # Send action, username, and password to the server
             self.client_socket.sendall(action.encode('utf-8'))
             self.client_socket.sendall(username.encode('utf-8'))
             self.client_socket.sendall(password.encode('utf-8'))
 
-        # Receive authentication response from server
             auth_response = self.client_socket.recv(1024).decode('utf-8')
-           
+            
             if "successful" in auth_response:
                 self.connect_button.config(state=tk.DISABLED)  # Disable button on successful connection
                 threading.Thread(target=self.receive_messages, daemon=True).start()
@@ -79,8 +75,8 @@ class ClientSocket:
 
     def create_gui(self): 
         self.window = tk.Tk()
-        self.window.title("Chat Client")
-        self.window.configure(bg="#003366")
+        self.window.title("CLINET")
+        self.window.configure(bg="#0037ff")
         self.action_var = tk.StringVar(value="login")
 
         # ScrolledText widget for chat logs
@@ -149,7 +145,7 @@ class ClientSocket:
             self.message_entry.delete(0, tk.END)
         
 if __name__ == "__main__":
-    host = '10.220.52.65'
-    port = 1200
+    host = '192.168.56.1'
+    port = 27017
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

@@ -114,7 +114,7 @@ class ClientSocket:
             fg="white",
             font=("Caslon Antique", 20, "bold")
         )
-        self.active_users_label.grid(row=1, column=2, padx=5, pady=5, sticky="nsew")
+        self.active_users_label.grid(row=2, column=2, padx=5, pady=(5), sticky="nsew")
 
         self.active_users_text = scrolledtext.ScrolledText(
             self.window, 
@@ -145,7 +145,7 @@ class ClientSocket:
             insertbackground="black", 
             font=("Caslon Antique", 20)
         )
-        self.username_entry.grid(row=2, column=1, padx=10, pady=5)
+        self.username_entry.grid(row=2, column=1, padx=0, pady=5, sticky="w")
 
         self.password_label = tk.Label(
             self.window, 
@@ -165,7 +165,7 @@ class ClientSocket:
             insertbackground="black", 
             font=("Caslon Antique", 20)
         )
-        self.password_entry.grid(row=3, column=1, padx=10, pady=5)
+        self.password_entry.grid(row=3, column=1, padx=0, pady=5, sticky="w")
 
         # --- User Actions (Login/Register) ---
         self.action_var = tk.StringVar(value="login")  # Default action is login
@@ -173,24 +173,24 @@ class ClientSocket:
         self.login_rb = tk.Radiobutton(
             self.window, 
             text="Login", 
-            variable=self.action_var, 
+            command=self.action_var, 
             value="Login", 
             bg="#0b3595", 
             fg="white", 
             font=("Caslon Antique", 15)
         )
-        self.login_rb.grid(row=4, column=0, padx=10, pady=5)
+        self.login_rb.grid(row=4, column=0, padx=5, pady=5, sticky="e")
 
         self.register_rb = tk.Radiobutton(
             self.window, 
             text="Register", 
-            variable=self.action_var, 
+            command=self.action_var, 
             value="Register", 
             bg="#0b3595", 
             fg="white", 
             font=("Caslon Antique", 15)
         )
-        self.register_rb.grid(row=4, column=1, padx=10, pady=5)
+        self.register_rb.grid(row=4, column=1, padx=0, pady=5, sticky="w")
 
         self.connect_button = tk.Button(
             self.window, 
@@ -200,7 +200,7 @@ class ClientSocket:
             fg="white", 
             font=("Caslon Antique", 20, "bold")
         )
-        self.connect_button.grid(row=5, column=1, padx=10, pady=10)
+        self.connect_button.grid(row=4, column=2, padx=(0), pady=5, sticky="w")
 
         # --- Message Input Section ---
         self.message_label = tk.Label(
@@ -230,7 +230,7 @@ class ClientSocket:
             fg="white", 
             font=("Caslon Antique", 20, "bold")
         )
-        self.send_button.grid(row=6, column=2, padx=10, pady=5)
+        self.send_button.grid(row=6, column=2, padx=10, pady=5, sticky="w")
 
         # --- Grid Configuration ---
         self.window.grid_rowconfigure(0, weight=1)  # For chat area

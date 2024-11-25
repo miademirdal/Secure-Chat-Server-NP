@@ -265,6 +265,6 @@ class ClientSocket:
         
 if __name__ == "__main__":
     host = '172.20.10.3'
-    port = 27017
+    port = 80
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

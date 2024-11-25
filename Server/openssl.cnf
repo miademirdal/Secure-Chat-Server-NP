@@ -11,4 +11,4 @@ commonName_max = 64
 subjectAltName = @alt_names
 
 [ alt_names ]
-IP.1 = 10.220.80.1
+IP.1 = 69.43.66.35

@@ -24,7 +24,7 @@ class ServerSocket:
         self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
         
         #setup MongoDB
-        self.client_db = MongoClient("mongodb://69.43.66.35/")
+        self.client_db = MongoClient("mongodb://172.20.10.3/")
         self.db = self.client_db['chat_db']
         self.user_collection = self.db['users']
 
@@ -161,7 +161,7 @@ class ServerSocket:
             client_thread.start()
 
 if __name__ == "__main__":
-    host = '69.43.66.35'
+    host = '172.20.10.3'
     port = 27017
     server = ServerSocket(host=host, port=port) 
     server.start_server()

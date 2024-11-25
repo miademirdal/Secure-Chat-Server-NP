@@ -264,7 +264,7 @@ class ClientSocket:
             self.message_entry.delete(0, tk.END)
         
 if __name__ == "__main__":
-    host = '69.43.66.35'
+    host = '172.20.10.3'
     port = 27017
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

@@ -9,6 +9,8 @@ import tkinter as tk
 
 class ServerSocket:
     """server class"""
+    hostname = 'clinet.ddns.net'
+    port = 61626
     
     def __init__(self, host: str, port: int) -> None:\
 
@@ -24,7 +26,7 @@ class ServerSocket:
         self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
         
         #setup MongoDB
-        self.client_db = MongoClient("mongodb://172.20.10.3/")
+        self.client_db = MongoClient("mongodb://clinet.ddns.net:27017/")  # Use local MongoDB instance
         self.db = self.client_db['chat_db']
         self.user_collection = self.db['users']
 
@@ -41,15 +43,14 @@ class ServerSocket:
                 except Exception as e:
                     print(f"Error sending active users list: {e}")
 
-    def user_storage(self, username: str, password: str)-> bool:
-    # Store the username and password in MongoDB
-        if not self.user_collection.find_one({"username" : username}):
-            return False
-        else:
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            self.user_collection.insert_one({"username" : username, "password" : hashed_password})
-            print(f"Stored user: {username}")
-            return True
+    def user_storage(self, username: str, password: str) -> bool:
+        if self.user_collection.find_one({"username": username}):
+            return False  # Username already exists
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        self.user_collection.insert_one({"username": username, "password": hashed_password})
+        print(f"Stored user: {username}")
+        return True
+
         
     def user_auth(self, username: str, password: str):
         user = self.user_collection.find_one({"username": username})
@@ -70,51 +71,56 @@ class ServerSocket:
         print("---------------------------\n")
     
     def client_connect(self, client_socket):
-        print(f"Client Connected")
-        action = client_socket.recv(1024).decode('utf-8')
-
-        if action == "register":
-            while True:
-                username = client_socket.recv(1024).decode('utf-8')
-                password = client_socket.recv(1024).decode('utf-8')
-                print(f"Received registration request for username: {username}")
-        
-            # Register the user
-                if self.user_storage(username, password):
-                    client_socket.sendall("Registration successful.".encode('utf-8'))
-                    break
-                else:
-                    client_socket.sendall("Username already in use.".encode('utf-8'))
-            return
-
-        elif action == "login":
-        # Login process
+        secure_client_socket = self.context.wrap_socket(client_socket, server_side=True)
+        try:
+            action = secure_client_socket.recv(1024).decode('utf-8')
+            if action == "register":
+                self.handle_registration(secure_client_socket)
+            elif action == "login":
+                self.handle_login(secure_client_socket)
+        except Exception as e:
+            print(f"Error handling client: {e}")
+        finally:
+            secure_client_socket.close()
+            
+    def handle_registration(self, client_socket):
+        while True:
             username = client_socket.recv(1024).decode('utf-8')
             password = client_socket.recv(1024).decode('utf-8')
+            if self.user_storage(username, password):
+                client_socket.sendall("Registration successful.".encode('utf-8'))
+                break
+            else:
+                client_socket.sendall("Username already in use.".encode('utf-8'))
 
+    def handle_login(self, client_socket):
+        username = client_socket.recv(1024).decode('utf-8')
+        password = client_socket.recv(1024).decode('utf-8')
         if self.user_auth(username, password):
             client_socket.sendall("Login successful.".encode('utf-8'))
-            self.active_users.append(username)
-            client_socket.sendall("User {username} authenticated successfully.".encode('utf-8'))
-            print(f"User {username} authenticated successfully.")
-            
-            # Chat functionality
-            while True:
-                try:
-                    data = client_socket.recv(1024)
-                    if not data:
-                        print(f"User {username} disconnected.")
-                        self.active_users.remove(username)
-                        break  # If no data is received, break the loop
-                    print(f"Received from client: {data.decode('utf-8')}")
-                    #client_socket.sendall("Server: Message Received!".encode('utf-8'))
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-                    self.active_users.remove(username)
-                    break
+            with self.lock:
+                self.active_users.append(username)
+            self.handle_chat(client_socket, username)
         else:
             client_socket.sendall("Login failed.".encode('utf-8'))
-            client_socket.close()
+            
+            # Chat functionality
+        while True:
+            try:
+                data = client_socket.recv(1024)
+                if not data:
+                    print(f"User {username} disconnected.")
+                    self.active_users.remove(username)
+                    break  # If no data is received, break the loop
+                print(f"Received from client: {data.decode('utf-8')}")
+                #client_socket.sendall("Server: Message Received!".encode('utf-8'))
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                self.active_users.remove(username)
+                break
+            else:
+                client_socket.sendall("Login failed.".encode('utf-8'))
+                client_socket.close()
 
         with self.lock:
             self.active_users.append(username)
@@ -161,7 +167,7 @@ class ServerSocket:
             client_thread.start()
 
 if __name__ == "__main__":
-    host = '172.20.10.3'
-    port = 80
+    host = '0.0.0.0'
+    port = 61626
     server = ServerSocket(host=host, port=port) 
     server.start_server()

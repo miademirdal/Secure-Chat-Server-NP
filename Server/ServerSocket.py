@@ -82,7 +82,6 @@ class ServerSocket:
                 if message.lower() == 'end':
                     break
                 print(f"{username}: {message}")
-                self.broadcast_message(f"{username}: {message}")
         except Exception as e:
             print(f"Connection lost with {username}: {e}")
         finally:

@@ -1,4 +1,4 @@
 {
-    "hostname" : "clinet.ddns.net",
+    "host" : "127.0.0.1",
     "port" : "61626"
 }

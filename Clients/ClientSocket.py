@@ -12,9 +12,9 @@ class ClientSocket:
     with open ('config.json', 'r') as configFile:
         config = json.load(configFile)
         
-    hostname = config['hostname']
+    hostname = config['host']
     port = config['port']
-    client = MongoClient("mongodb://clinet.ddns.net:27017/")
+    client = MongoClient("mongodb://localhost:27017/")
     db = client['chat_db']
     
     def __init__(self, host: str, port: int, use_tls: bool = False) -> None:
@@ -24,7 +24,9 @@ class ClientSocket:
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if use_tls:
             self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-            self.context.load_verify_locations('Server/server.crt')
+            self.context.check_hostname = False
+            self.context.verify_mode = ssl.CERT_NONE  
+            self.context.load_verify_locations('Server/localhost.crt') 
             self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
     
     def update_active_users(self, message):
@@ -274,7 +276,7 @@ class ClientSocket:
             self.message_entry.delete(0, tk.END)
         
 if __name__ == "__main__":
-    host = 'clinet.ddns.net'
+    host = '127.0.0.1'
     port = 61626
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

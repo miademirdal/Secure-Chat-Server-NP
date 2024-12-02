@@ -286,7 +286,7 @@ class ClientSocket:
             self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
-    host = '172.20.10.2'
+    host = '127.0.0.1'
     port = 61626
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

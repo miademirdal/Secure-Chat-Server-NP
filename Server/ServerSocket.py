@@ -13,7 +13,7 @@ class ServerSocket:
         # Socket setup
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen()
+        self.server_socket.listen(10)
         print(f"Server started on {self.host}:{self.port}")
 
         # SSL setup

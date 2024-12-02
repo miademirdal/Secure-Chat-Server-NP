@@ -133,7 +133,7 @@ class ServerSocket:
         print(f"User {username} disconnected.")
 
 if __name__ == "__main__":
-    host = '0.0.0.0'
+    host = '172.20.10.2'
     port = 61626
     server = ServerSocket(host=host, port=port)
     server.start_server()

@@ -92,7 +92,7 @@ class ClientSocket:
             self.window.quit()
         else:
             self.client_socket.sendall(message.encode('utf-8'))
-
+    
     def create_gui(self):
         # Window Configuration
         self.window = tk.Tk()
@@ -265,15 +265,25 @@ class ClientSocket:
 
     def send_chat_message(self):
         message = self.message_entry.get()
-        if message.lower() == 'end':
-            self.client_socket.sendall(message.encode('utf-8'))
-            self.client_socket.close()  # Properly close connection when ending chat
-            self.window.quit()  # Close the client window
-        else:
-            self.client_socket.sendall(message.encode('utf-8'))
-            self.text_area.insert(tk.END, f"You: {message}\n")
+        try: 
+
+            if message.lower() == 'end':
+                self.client_socket.sendall(message.encode('utf-8'))
+                self.client_socket.close()  # Properly close connection when ending chat
+                self.window.quit()  # Close the client window
+            else:
+                self.client_socket.sendall(message.encode('utf-8'))
+                self.text_area.insert(tk.END, f"You: {message}\n")
+                self.text_area.yview(tk.END)
+                self.message_entry.delete(0, tk.END)
+        except ssl.SSLEOFError as e:
+            print(f"SSL Error occurred: {e}")
+            self.text_area.insert(tk.END, "SSL Error: The connection was closed unexpectedly.\n")
             self.text_area.yview(tk.END)
-            self.message_entry.delete(0, tk.END)
+        except Exception as e:
+            print(f"Error sending message: {e}")
+            self.text_area.insert(tk.END, f"Error: {e}\n")
+            self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
     host = '127.0.0.1'

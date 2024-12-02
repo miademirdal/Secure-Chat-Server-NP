@@ -46,11 +46,16 @@ class ServerSocket:
                 self.handle_registration(client_socket)
             elif action == "login":
                 self.handle_login(client_socket)
+        except ssl.SSLERROR as e:
+            self.handle_login(client_socket)
         except Exception as e:
             print(f"Error handling client: {e}")
         finally:
-            client_socket.close()
-
+            try:
+                client_socket.close()
+            except:
+                pass
+            
     def handle_registration(self, client_socket):
         while True:
             username = client_socket.recv(1024).decode('utf-8')
@@ -92,10 +97,11 @@ class ServerSocket:
         with self.lock:
             for client in self.connected_clients:
                 try:
-                    client.sendall(message.encode('utf-8'))
-                except:
-                    print("Message failed to send.")
-
+                    if client.fileno() != -1: 
+                        client.sendall(message.encode('utf-8'))
+                except (socket.error, ssl.SSLError) as e:
+                    print(f"Error sending message: {e}")
+                    self.remove_client(client)
     def user_storage(self, username: str, password: str) -> bool:
         if self.user_collection.find_one({"username": username}):
             return False  # Username already exists
@@ -122,8 +128,12 @@ class ServerSocket:
         with self.lock:
             if username in self.active_users:
                 self.active_users.remove(username)
-            if client_socket in self.connected_clients:
+            if client_socket in self.connected_clients: 
                 self.connected_clients.remove(client_socket)
+        try:
+            client_socket.close()
+        except:
+            pass
         self.update_active_users()
         print(f"User {username} disconnected.")
 

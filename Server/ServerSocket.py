@@ -136,6 +136,6 @@ class CentralServerSocket:
 
 if __name__ == "__main__":
     host = 'clinet.ddns.net'
-    port = 61626
+    port = 61636
     server = CentralServerSocket(host=host, port=port)
     server.start_server()

@@ -12,13 +12,13 @@ class CentralServerSocket:
 
         # Socket setup
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind((self.host, self.port))
+        self.server_socket.bind(('0.0.0.0', self.port))
         self.server_socket.listen(10)
         print(f"Server started on {self.host}:{self.port}")
 
         # SSL setup
         self.context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        self.context.load_cert_chain(certfile='Server/localhost.crt', keyfile='Server/localhost.key')
+        self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
 
         # MongoDB setup
         self.client_db = MongoClient("mongodb://localhost:27017/")

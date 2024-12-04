@@ -28,7 +28,7 @@ class ClientSocket:
             self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
             self.context.check_hostname = False  # Disable hostname checking for self-signed certs
             self.context.verify_mode = ssl.CERT_REQUIRED  # Ensure server presents a valid certificate
-            self.context.load_verify_locations('Server/localhost.crt')  # Path to CA certificate
+            self.context.load_verify_locations('Server/server.crt')  # Path to CA certificate
             self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
 
     def update_active_users(self, message):

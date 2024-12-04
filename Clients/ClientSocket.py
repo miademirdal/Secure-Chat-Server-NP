@@ -7,28 +7,30 @@ from PIL import Image, ImageTk
 import json
 from pymongo import MongoClient
 
+
 class ClientSocket:
     """Client class"""
-    with open ('config.json', 'r') as configFile:
+    with open('config.json', 'r') as configFile:
         config = json.load(configFile)
-        
+
     hostname = config['host']
     port = config['port']
     client = MongoClient("mongodb://localhost:27017/")
     db = client['chat_db']
-    
+
     def __init__(self, host: str, port: int, use_tls: bool = False) -> None:
         self.host = host
         self.port = port
         self.use_tls = use_tls
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if use_tls:
+            # Configure SSL context
             self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-            self.context.check_hostname = False
-            self.context.verify_mode = ssl.CERT_NONE  
-            self.context.load_verify_locations('Server/localhost.crt') 
+            self.context.check_hostname = False  # Disable hostname checking for self-signed certs
+            self.context.verify_mode = ssl.CERT_REQUIRED  # Ensure server presents a valid certificate
+            self.context.load_verify_locations('Server/localhost.crt')  # Path to CA certificate
             self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
-    
+
     def update_active_users(self, message):
         """Update the active users list in the GUI."""
         self.active_users_text.config(state=tk.NORMAL)
@@ -44,10 +46,11 @@ class ClientSocket:
                     print(f"Server has closed the connection.")
                     break
                 message = response.decode('utf-8')
-                
+
                 if message.startswith("Active Users"):
-                    self.text_area.after(0,self.update_active_users, message)
-                else:self.text_area.after(0, self.insert_message, f"Server: {message}\n")
+                    self.text_area.after(0, self.update_active_users, message)
+                else:
+                    self.text_area.after(0, self.insert_message, f"Server: {message}\n")
             except Exception as e:
                 print(f"An error occurred while receiving a message: {e}")
                 break
@@ -59,21 +62,17 @@ class ClientSocket:
 
     def connect_server(self, username, password, action):
         try:
-            if self.use_tls:
-            # Only wrap the socket if it's a valid socket object
-                if not self.client_socket._closed:  # Check if the socket is open (this is just an example check)
-                    self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
-            else:
-                print(f"Error: Socket is already closed before wrapping with SSL.")
+            if self.client_socket._closed:
+                print("Socket is closed. Cannot connect.")
                 return
-            
-            self.client_socket.connect((self.host, self.port))  # Only after wrapping or creating the socket
+
+            self.client_socket.connect((self.host, self.port))  # Connect to the server
             self.client_socket.sendall(action.encode('utf-8'))
             self.client_socket.sendall(username.encode('utf-8'))
             self.client_socket.sendall(password.encode('utf-8'))
 
             auth_response = self.client_socket.recv(1024).decode('utf-8')
-            
+
             if "successful" in auth_response:
                 self.connect_button.config(state=tk.DISABLED)  # Disable button on successful connection
                 threading.Thread(target=self.receive_messages, daemon=True).start()
@@ -81,10 +80,13 @@ class ClientSocket:
                 self.client_socket.close()
                 self.text_area.after(0, self.insert_message, "Authentication failed. Connection closed.\n")
 
+        except ssl.SSLError as ssl_error:
+            print(f"SSL Error occurred: {ssl_error}")
+            self.text_area.insert(tk.END, "SSL Error: Could not establish a secure connection.\n")
         except Exception as e:
             print(f"Error connecting to server: {e}")
             self.text_area.after(0, self.insert_message, f"Error: {e}\n")
-        
+
     def send_message(self, message):
         if message.lower() == 'end':
             self.client_socket.sendall(message.encode('utf-8'))

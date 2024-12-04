@@ -13,7 +13,7 @@ class ClientSocket:
     with open('config.json', 'r') as configFile:
         config = json.load(configFile)
 
-    hostname = config['host']
+    hostname = config['hostname']
     port = config['port']
     client = MongoClient("mongodb://clinet.ddns.net:27017/")
     db = client['chat_db']

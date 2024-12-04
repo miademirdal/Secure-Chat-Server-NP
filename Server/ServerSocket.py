@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import bcrypt
 from threading import Lock
 
-class ServerSocket:
+class CentralServerSocket:
     def __init__(self, host: str, port: int) -> None:
         self.host = host
         self.port = port
@@ -27,7 +27,7 @@ class ServerSocket:
 
         # Threading utilities
         self.lock = Lock()
-        self.active_users = []  # List of active usernames
+        self.active_users = {}  # Map of usernames to client sockets
         self.connected_clients = []  # List of client sockets
 
     def start_server(self):
@@ -46,11 +46,16 @@ class ServerSocket:
                 self.handle_registration(client_socket)
             elif action == "login":
                 self.handle_login(client_socket)
-        except ssl.SSLERROR as e:
-            self.handle_login(client_socket)
+        except ssl.SSLError as e:
+            print(f"SSL error: {e}")
         except Exception as e:
             print(f"Error handling client: {e}")
-            
+        finally:
+            try:
+                client_socket.close()
+            except:
+                pass
+
     def handle_registration(self, client_socket):
         while True:
             username = client_socket.recv(1024).decode('utf-8')
@@ -68,7 +73,7 @@ class ServerSocket:
         if self.user_auth(username, password):
             client_socket.sendall("Login successful.".encode('utf-8'))
             with self.lock:
-                self.active_users.append(username)
+                self.active_users[username] = client_socket
                 self.connected_clients.append(client_socket)
             self.update_active_users()
             threading.Thread(target=self.handle_chat, args=(client_socket, username), daemon=True).start()
@@ -91,12 +96,13 @@ class ServerSocket:
     def broadcast_message(self, message, exclude_socket=None):
         with self.lock:
             for client in self.connected_clients:
-               if client != exclude_socket:
-                try:
-                    client.sendall(message.encode('utf-8'))
-                except (socket.error, ssl.SSLError) as e:
-                    print(f"Error sending message: {e}")
-                    self.remove_client(client)
+                if client != exclude_socket:
+                    try:
+                        client.sendall(message.encode('utf-8'))
+                    except (socket.error, ssl.SSLError) as e:
+                        print(f"Error sending message: {e}")
+                        self.remove_client(client)
+
     def user_storage(self, username: str, password: str) -> bool:
         if self.user_collection.find_one({"username": username}):
             return False  # Username already exists
@@ -112,18 +118,18 @@ class ServerSocket:
         return False
 
     def update_active_users(self):
-        active_users = ', '.join(self.active_users)
+        active_users_list = ', '.join(self.active_users.keys())
         for client in self.connected_clients:
             try:
-                client.sendall(f"Active Users: {active_users}".encode('utf-8'))
+                client.sendall(f"Active Users: {active_users_list}".encode('utf-8'))
             except:
                 print("Failed to update active users list.")
 
     def remove_user(self, username, client_socket):
         with self.lock:
             if username in self.active_users:
-                self.active_users.remove(username)
-            if client_socket in self.connected_clients: 
+                del self.active_users[username]
+            if client_socket in self.connected_clients:
                 self.connected_clients.remove(client_socket)
         try:
             client_socket.close()
@@ -135,5 +141,5 @@ class ServerSocket:
 if __name__ == "__main__":
     host = '0.0.0.0'
     port = 61626
-    server = ServerSocket(host=host, port=port)
+    server = CentralServerSocket(host=host, port=port)
     server.start_server()

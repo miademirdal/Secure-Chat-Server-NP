@@ -15,7 +15,7 @@ class ClientSocket:
 
     hostname = config['host']
     port = config['port']
-    client = MongoClient("mongodb://localhost:27017/")
+    client = MongoClient("mongodb://clinet.ddns.net:27017/")
     db = client['chat_db']
 
     def __init__(self, host: str, port: int, use_tls: bool = False) -> None:

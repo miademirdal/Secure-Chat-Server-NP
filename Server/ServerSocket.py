@@ -50,11 +50,7 @@ class CentralServerSocket:
             print(f"SSL error: {e}")
         except Exception as e:
             print(f"Error handling client: {e}")
-        finally:
-            try:
-                client_socket.close()
-            except:
-                pass
+       
 
     def handle_registration(self, client_socket):
         while True:

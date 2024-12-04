@@ -135,7 +135,7 @@ class CentralServerSocket:
         print(f"User {username} disconnected.")
 
 if __name__ == "__main__":
-    host = '0.0.0.0'
+    host = 'clinet.ddns.net'
     port = 61626
     server = CentralServerSocket(host=host, port=port)
     server.start_server()

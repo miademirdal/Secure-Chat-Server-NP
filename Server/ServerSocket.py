@@ -82,17 +82,18 @@ class ServerSocket:
                 if message.lower() == 'end':
                     break
                 print(f"{username}: {message}")
+                self.broadcast_message(f"{username}: {message}", exclude_socket=client_socket)
         except Exception as e:
             print(f"Connection lost with {username}: {e}")
         finally:
             self.remove_user(username, client_socket)
 
-    def broadcast_message(self, message):
+    def broadcast_message(self, message, exclude_socket=None):
         with self.lock:
             for client in self.connected_clients:
+               if client != exclude_socket:
                 try:
-                    if client.fileno() != -1: 
-                        client.sendall(message.encode('utf-8'))
+                    client.sendall(message.encode('utf-8'))
                 except (socket.error, ssl.SSLError) as e:
                     print(f"Error sending message: {e}")
                     self.remove_client(client)

@@ -1,5 +1,4 @@
 import socket
-import ssl
 import threading
 from pymongo import MongoClient
 import bcrypt
@@ -16,10 +15,6 @@ class CentralServerSocket:
         self.server_socket.listen(10)
         print(f"Server started on {self.host}:{self.port}")
 
-        # SSL setup
-        self.context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
-
         # MongoDB setup
         self.client_db = MongoClient("mongodb://localhost:27017/")
         self.db = self.client_db['chat_db']
@@ -34,10 +29,8 @@ class CentralServerSocket:
         while True:
             client_socket, addr = self.server_socket.accept()
             print(f"Connection received from {addr}")
-            # Secure the client socket
-            secure_client_socket = self.context.wrap_socket(client_socket, server_side=True)
             # Handle client connection in a new thread
-            threading.Thread(target=self.client_connect, args=(secure_client_socket,), daemon=True).start()
+            threading.Thread(target=self.client_connect, args=(client_socket,), daemon=True).start()
 
     def client_connect(self, client_socket):
         try:
@@ -46,11 +39,8 @@ class CentralServerSocket:
                 self.handle_registration(client_socket)
             elif action == "login":
                 self.handle_login(client_socket)
-        except ssl.SSLError as e:
-            print(f"SSL error: {e}")
         except Exception as e:
             print(f"Error handling client: {e}")
-       
 
     def handle_registration(self, client_socket):
         while True:
@@ -95,7 +85,7 @@ class CentralServerSocket:
                 if client != exclude_socket:
                     try:
                         client.sendall(message.encode('utf-8'))
-                    except (socket.error, ssl.SSLError) as e:
+                    except (socket.error) as e:
                         print(f"Error sending message: {e}")
                         self.remove_client(client)
 

@@ -23,10 +23,7 @@ class ClientSocket:
         self.port = port
         self.use_tls = use_tls
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if use_tls:
-            # Configure SSL context to use default CA certificates
-            self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-            self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
+        
 
 
     def update_active_users(self, message):
@@ -78,9 +75,7 @@ class ClientSocket:
                 self.client_socket.close()
                 self.text_area.after(0, self.insert_message, "Authentication failed. Connection closed.\n")
 
-        except ssl.SSLError as ssl_error:
-            print(f"SSL Error occurred: {ssl_error}")
-            self.text_area.insert(tk.END, "SSL Error: Could not establish a secure connection.\n")
+            
         except Exception as e:
             print(f"Error connecting to server: {e}")
             self.text_area.after(0, self.insert_message, f"Error: {e}\n")
@@ -276,10 +271,6 @@ class ClientSocket:
                 self.text_area.insert(tk.END, f"You: {message}\n")
                 self.text_area.yview(tk.END)
                 self.message_entry.delete(0, tk.END)
-        except ssl.SSLEOFError as e:
-            print(f"SSL Error occurred: {e}")
-            self.text_area.insert(tk.END, "SSL Error: The connection was closed unexpectedly.\n")
-            self.text_area.yview(tk.END)
         except Exception as e:
             print(f"Error sending message: {e}")
             self.text_area.insert(tk.END, f"Error: {e}\n")
@@ -288,5 +279,5 @@ class ClientSocket:
 if __name__ == "__main__":
     host = 'cute-meerkat-frankly.ngrok-free.app'
     port = 18774
-    client = ClientSocket(host=host, port=port, use_tls=True)
+    client = ClientSocket(host=host, port=port, use_tls=False)
     client.create_gui()

@@ -286,7 +286,7 @@ class ClientSocket:
             self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
-    host = ' https://cute-meerkat-frankly.ngrok-free.app'
+    host = 'cute-meerkat-frankly.ngrok-free.app'
     port = 18774
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

@@ -24,12 +24,10 @@ class ClientSocket:
         self.use_tls = use_tls
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if use_tls:
-            # Configure SSL context
+            # Configure SSL context to use default CA certificates
             self.context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-            self.context.check_hostname = False  # Disable hostname checking for self-signed certs
-            self.context.verify_mode = ssl.CERT_REQUIRED  # Ensure server presents a valid certificate
-            self.context.load_verify_locations('Server/server.crt')  # Path to CA certificate
             self.client_socket = self.context.wrap_socket(self.client_socket, server_hostname=self.host)
+
 
     def update_active_users(self, message):
         """Update the active users list in the GUI."""

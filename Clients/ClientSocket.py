@@ -278,6 +278,6 @@ class ClientSocket:
         
 if __name__ == "__main__":
     host = 'cute-meerkat-frankly.ngrok-free.app'
-    port = 18774
+    port = 80
     client = ClientSocket(host=host, port=port, use_tls=False)
     client.create_gui()

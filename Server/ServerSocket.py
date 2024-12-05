@@ -126,6 +126,6 @@ class CentralServerSocket:
 
 if __name__ == "__main__":
     host = '0.0.0.0'
-    port = 18774
+    port = 80
     server = CentralServerSocket(host=host, port=port)
     server.start_server()

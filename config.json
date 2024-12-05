@@ -1,4 +1,4 @@
 {
-    "hostname" : "tcp://6.tcp.ngrok.io:18774",
-    "port" : "61636"
+    "hostname" : "6.tcp.ngrok.io",
+    "port" : "18774"
 }

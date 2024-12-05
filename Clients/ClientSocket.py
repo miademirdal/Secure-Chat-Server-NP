@@ -288,7 +288,7 @@ class ClientSocket:
             self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
-    host = 'tcp://6.tcp.ngrok.io:18774'
-    port = 61636
+    host = '6.tcp.ngrok.io'
+    port = 18774
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

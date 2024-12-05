@@ -1,4 +1,4 @@
 {
-    "hostname" : "clinet.ddns.net",
+    "hostname" : "tcp://6.tcp.ngrok.io:18774",
     "port" : "61636"
 }

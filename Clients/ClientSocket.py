@@ -15,7 +15,7 @@ class ClientSocket:
 
     hostname = config['hostname']
     port = config['port']
-    client = MongoClient("mongodb://clinet.ddns.net:27017/")
+    client = MongoClient("mongodb://localhost:27017/")
     db = client['chat_db']
 
     def __init__(self, host: str, port: int, use_tls: bool = False) -> None:
@@ -288,7 +288,7 @@ class ClientSocket:
             self.text_area.yview(tk.END)
         
 if __name__ == "__main__":
-    host = 'clinet.ddns.net'
+    host = 'tcp://6.tcp.ngrok.io:18774'
     port = 61636
     client = ClientSocket(host=host, port=port, use_tls=True)
     client.create_gui()

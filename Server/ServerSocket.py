@@ -21,7 +21,7 @@ class CentralServerSocket:
         self.context.load_cert_chain(certfile='Server/server.crt', keyfile='Server/server.key')
 
         # MongoDB setup
-        self.client_db = MongoClient("mongodb://clinet.ddns.net:27017/")
+        self.client_db = MongoClient("mongodb://localhost:27017/")
         self.db = self.client_db['chat_db']
         self.user_collection = self.db['users']
 
@@ -135,7 +135,7 @@ class CentralServerSocket:
         print(f"User {username} disconnected.")
 
 if __name__ == "__main__":
-    host = 'clinet.ddns.net'
+    host = '0.0.0.0'
     port = 61636
     server = CentralServerSocket(host=host, port=port)
     server.start_server()

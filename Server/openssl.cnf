@@ -11,4 +11,4 @@ commonName_max = 64
 subjectAltName = @alt_names
 
 [ alt_names ]
-IP.1 = clinet.ddns.net
+IP.1 =  https://cute-meerkat-frankly.ngrok-free.app
